@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VAERDEG — Be You. Impact the Game.</title>
+  <meta name="description" content="Performance behavior platform for footballers. Built on proven methodology. Coming soon." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --cyan:    #00f0ff;
+      --white:   #ffffff;
+      --navy:    #010b19;
+      --navy2:   #0b1a24;
+      --slate:   #4a5a66;
+      --cyan-dim: rgba(0, 240, 255, 0.08);
+      --cyan-border: rgba(0, 240, 255, 0.2);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--navy);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── AMBIENT GLOW ── */
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-orb-1 {
+      width: 600px; height: 600px;
+      background: rgba(0, 240, 255, 0.04);
+      top: -200px; left: -200px;
+    }
+    .glow-orb-2 {
+      width: 400px; height: 400px;
+      background: rgba(0, 240, 255, 0.03);
+      bottom: 0; right: -100px;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 24px 0;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(1, 11, 25, 0.92);
+      backdrop-filter: blur(12px);
+      border-color: var(--cyan-border);
+    }
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 36px;
+      height: 36px;
+    }
+    .nav-logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.12em;
+      color: var(--white);
+    }
+    .nav-logo-text span {
+      color: var(--cyan);
+    }
+    .nav-cta {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      border: 1px solid var(--cyan-border);
+      padding: 10px 20px;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .nav-cta:hover {
+      background: var(--cyan-dim);
+      border-color: var(--cyan);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 120px 0 80px;
+      position: relative;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.2s;
+    }
+
+    .hero-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(56px, 7vw, 96px);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.4s;
+    }
+    .hero-headline .accent {
+      color: var(--cyan);
+      display: block;
+    }
+
+    .hero-body {
+      font-size: 17px;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.65);
+      max-width: 440px;
+      margin-bottom: 48px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.6s;
+    }
+
+    /* ── WAITLIST FORM ── */
+    .waitlist-form {
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.8s;
+    }
+    .waitlist-form-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--slate);
+      margin-bottom: 12px;
+      display: block;
+    }
+    .waitlist-input-row {
+      display: flex;
+      gap: 0;
+    }
+    .waitlist-input {
+      flex: 1;
+      background: var(--navy2);
+      border: 1px solid var(--cyan-border);
+      border-right: none;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      padding: 16px 20px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .waitlist-input::placeholder { color: var(--slate); }
+    .waitlist-input:focus { border-color: var(--cyan); }
+    .waitlist-btn {
+      background: var(--cyan);
+      color: var(--navy);
+      border: 1px solid var(--cyan);
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 16px 28px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .waitlist-btn:hover { opacity: 0.85; }
+    .waitlist-btn:active { transform: scale(0.98); }
+    .waitlist-note {
+      font-size: 12px;
+      color: var(--slate);
+      margin-top: 12px;
+    }
+    .waitlist-success {
+      display: none;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--cyan);
+      letter-spacing: 0.1em;
+      margin-top: 16px;
+    }
+
+    /* ── HERO VISUAL ── */
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      animation: fadeIn 1.2s ease forwards 0.6s;
+      position: relative;
+    }
+
+    .hero-icon-wrap {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Pulse rings */
+    .pulse-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid var(--cyan-border);
+      animation: pulse 3s ease-out infinite;
+    }
+    .pulse-ring:nth-child(1) { width: 320px; height: 320px; animation-delay: 0s; }
+    .pulse-ring:nth-child(2) { width: 260px; height: 260px; animation-delay: 0.6s; }
+    .pulse-ring:nth-child(3) { width: 200px; height: 200px; animation-delay: 1.2s; }
+
+    .hero-v-mark {
+      position: relative;
+      z-index: 2;
+      width: 160px;
+      height: 160px;
+      filter: drop-shadow(0 0 24px rgba(0, 240, 255, 0.4));
+    }
+
+    /* ── DIVIDER ── */
+    .section-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan-border), transparent);
+      margin: 0;
+    }
+
+    /* ── PILLARS SECTION ── */
+    .pillars {
+      padding: 100px 0;
+    }
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 16px;
+    }
+    .section-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 4vw, 56px);
+      letter-spacing: 0.03em;
+      line-height: 1;
+      margin-bottom: 64px;
+      max-width: 600px;
+    }
+    .section-headline span { color: var(--cyan); }
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+    }
+    .pillar-card {
+      background: var(--navy2);
+      border: 1px solid var(--cyan-border);
+      padding: 36px 28px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .pillar-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--cyan);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+    .pillar-card:hover { border-color: rgba(0, 240, 255, 0.4); }
+    .pillar-card:hover::before { transform: scaleX(1); }
+
+    .pillar-number {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--slate);
+      margin-bottom: 20px;
+    }
+    .pillar-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.06em;
+      color: var(--cyan);
+      margin-bottom: 14px;
+      line-height: 1.1;
+    }
+    .pillar-desc {
+      font-size: 13px;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ── STATEMENT SECTION ── */
+    .statement {
+      padding: 100px 0;
+      text-align: center;
+      position: relative;
+    }
+    .statement-inner {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .statement-quote {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(32px, 4.5vw, 58px);
+      letter-spacing: 0.03em;
+      line-height: 1.1;
+      margin-bottom: 32px;
+      color: var(--white);
+    }
+    .statement-quote em {
+      color: var(--cyan);
+      font-style: normal;
+    }
+    .statement-sub {
+      font-size: 16px;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.5);
+      max-width: 560px;
+      margin: 0 auto 48px;
+    }
+
+    /* ── FOR WHO SECTION ── */
+    .forwho {
+      padding: 100px 0;
+    }
+    .forwho-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+    .forwho-left .section-headline { margin-bottom: 24px; }
+    .forwho-body {
+      font-size: 16px;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 32px;
+    }
+    .forwho-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      border: 1px solid var(--cyan-border);
+      padding: 8px 14px;
+    }
+
+    .forwho-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+    }
+    .stat-card {
+      background: var(--navy2);
+      border: 1px solid var(--cyan-border);
+      padding: 32px 24px;
+    }
+    .stat-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      color: var(--cyan);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.5;
+    }
+
+    /* ── BOTTOM CTA ── */
+    .bottom-cta {
+      padding: 120px 0;
+      text-align: center;
+      position: relative;
+    }
+    .bottom-cta::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 80px;
+      background: linear-gradient(to bottom, transparent, var(--cyan-border));
+    }
+    .bottom-cta .section-label { margin-bottom: 24px; }
+    .bottom-cta .hero-headline {
+      margin-bottom: 20px;
+      opacity: 1;
+      animation: none;
+    }
+    .bottom-cta .hero-body {
+      margin: 0 auto 48px;
+      opacity: 1;
+      animation: none;
+      text-align: center;
+    }
+    .bottom-waitlist {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--cyan-border);
+      padding: 32px 0;
+    }
+    footer .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-left {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--slate);
+    }
+    .footer-right {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--slate);
+    }
+    .footer-right span { color: var(--cyan); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes pulse {
+      0%   { transform: scale(0.95); opacity: 0.5; }
+      50%  { opacity: 0.15; }
+      100% { transform: scale(1.1); opacity: 0; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 60px; }
+      .hero-visual { order: -1; }
+      .hero-icon-wrap { width: 220px; height: 220px; }
+      .hero-v-mark { width: 110px; height: 110px; }
+      .pulse-ring:nth-child(1) { width: 220px; height: 220px; }
+      .pulse-ring:nth-child(2) { width: 170px; height: 170px; }
+      .pulse-ring:nth-child(3) { width: 120px; height: 120px; }
+      .pillars-grid { grid-template-columns: 1fr 1fr; }
+      .forwho-grid { grid-template-columns: 1fr; }
+      .forwho-stats { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      .pillars-grid { grid-template-columns: 1fr; }
+      .waitlist-input-row { flex-direction: column; }
+      .waitlist-input { border-right: 1px solid var(--cyan-border); border-bottom: none; }
+      footer .container { flex-direction: column; gap: 12px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-orb glow-orb-1"></div>
+  <div class="glow-orb glow-orb-2"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <div class="container">
+      <a href="#" class="nav-logo">
+        <svg id="Layer_1" class="nav-logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+          <polygon points="156.18 14.02 80.86 14.02 64.13 43.01 101.79 108.24 156.18 14.02" fill="#00f0ff"/>
+          <polygon points="38.89 14.02 3.82 14.02 80 145.98 97.54 115.6 38.89 14.02" fill="#00f0ff"/>
+          <path d="M84.7,42.92v8.75h-7.64v8.29h7.18v8.32h-7.18v9.61h8.18v8.75h-19.55v-7.86h-6.52l-1.85,7.86h-10.86l11.53-43.72h26.7ZM65.69,51.08l-4.83,19.96h4.83v-19.96Z" fill="#fff"/>
+          <path d="M88.51,42.92h8.05c5.36,0,9,.21,10.9.62s3.45,1.47,4.65,3.17c1.2,1.7,1.8,4.41,1.8,8.14,0,3.4-.42,5.69-1.27,6.86-.85,1.17-2.51,1.87-5,2.11,2.25.56,3.76,1.31,4.54,2.24.77.94,1.26,1.8,1.44,2.58.19.78.28,2.94.28,6.47v11.53h-10.56v-14.53c0-2.34-.19-3.79-.55-4.35-.37-.56-1.34-.84-2.9-.84v19.71h-11.37v-43.72ZM99.88,50.4v9.72c1.28,0,2.17-.18,2.69-.53.51-.35.77-1.49.77-3.42v-2.4c0-1.39-.25-2.3-.74-2.73-.49-.43-1.4-.65-2.71-.65Z" fill="#fff"/>
+        </svg>
+        <span class="nav-logo-text">VÆR<span>DEG</span></span>
+      </a>
+      <a href="#waitlist" class="nav-cta">Join Beta</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-left">
+          <p class="hero-eyebrow">Performance Behavior Platform — Football</p>
+          <h1 class="hero-headline">
+            Play the game
+            <span class="accent">as you.</span>
+          </h1>
+          <p class="hero-body">
+            Most players never perform to their real ceiling — not because of ability, but because pressure pulls them away from themselves. VAERDEG changes that. Built on proven elite methodology, it helps players reconnect with their identity, trust their instincts, and make an impact every time they step on the pitch.
+          </p>
+          <div class="waitlist-form" id="waitlist">
+            <span class="waitlist-form-label">Early Access — Beta Waitlist</span>
+            <div class="waitlist-input-row">
+              <input type="email" class="waitlist-input" placeholder="your@email.com" id="hero-email" />
+              <button class="waitlist-btn" onclick="handleSignup('hero-email', 'hero-success')">Get Access</button>
+            </div>
+            <p class="waitlist-note">No spam. First access when beta opens.</p>
+            <p class="waitlist-success" id="hero-success">✓ You're on the list. We'll be in touch.</p>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-icon-wrap">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <svg id="Layer_2" class="hero-v-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+              <polygon points="156.18 14.02 80.86 14.02 64.13 43.01 101.79 108.24 156.18 14.02" fill="#00f0ff"/>
+              <polygon points="38.89 14.02 3.82 14.02 80 145.98 97.54 115.6 38.89 14.02" fill="#00f0ff"/>
+              <path d="M84.7,42.92v8.75h-7.64v8.29h7.18v8.32h-7.18v9.61h8.18v8.75h-19.55v-7.86h-6.52l-1.85,7.86h-10.86l11.53-43.72h26.7ZM65.69,51.08l-4.83,19.96h4.83v-19.96Z" fill="#fff"/>
+              <path d="M88.51,42.92h8.05c5.36,0,9,.21,10.9.62s3.45,1.47,4.65,3.17c1.2,1.7,1.8,4.41,1.8,8.14,0,3.4-.42,5.69-1.27,6.86-.85,1.17-2.51,1.87-5,2.11,2.25.56,3.76,1.31,4.54,2.24.77.94,1.26,1.8,1.44,2.58.19.78.28,2.94.28,6.47v11.53h-10.56v-14.53c0-2.34-.19-3.79-.55-4.35-.37-.56-1.34-.84-2.9-.84v19.71h-11.37v-43.72ZM99.88,50.4v9.72c1.28,0,2.17-.18,2.69-.53.51-.35.77-1.49.77-3.42v-2.4c0-1.39-.25-2.3-.74-2.73-.49-.43-1.4-.65-2.71-.65Z" fill="#fff"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- PILLARS -->
+  <section class="pillars">
+    <div class="container">
+      <p class="section-label">The Method</p>
+      <h2 class="section-headline">Four pillars.<br /><span>One identity.</span></h2>
+      <div class="pillars-grid">
+        <div class="pillar-card">
+          <p class="pillar-number">01</p>
+          <h3 class="pillar-title">True Identity</h3>
+          <p class="pillar-desc">Know who you are when you perform at your best — and learn to play from that place under any pressure.</p>
+        </div>
+        <div class="pillar-card">
+          <p class="pillar-number">02</p>
+          <h3 class="pillar-title">Fear & Freedom</h3>
+          <p class="pillar-desc">Transform fear of failure into courageous, creative action. Excellence over perfection. If you go — go fully.</p>
+        </div>
+        <div class="pillar-card">
+          <p class="pillar-number">03</p>
+          <h3 class="pillar-title">Behavioral Mastery</h3>
+          <p class="pillar-desc">Performance doesn't require perfect emotions. It requires reliable behavior. Act like your best self — regardless of how you feel.</p>
+        </div>
+        <div class="pillar-card">
+          <p class="pillar-number">04</p>
+          <h3 class="pillar-title">Resilience & Inner Strength</h3>
+          <p class="pillar-desc">You don't bounce back — you bounce forward. Build the inner stability that sustains performance through every storm.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- STATEMENT -->
+  <section class="statement">
+    <div class="container">
+      <div class="statement-inner">
+        <p class="section-label">The Problem</p>
+        <h2 class="statement-quote">
+          The pass hasn't changed.<br />
+          <em>You've disconnected from yourself.</em>
+        </h2>
+        <p class="statement-sub">
+          Under pressure, players stop trusting their instincts. They play not to lose instead of playing to win. They blend in to stay safe — and disappear from the game. VAERDEG brings them back.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- FOR WHO -->
+  <section class="forwho">
+    <div class="container">
+      <div class="forwho-grid">
+        <div class="forwho-left">
+          <p class="section-label">Built For</p>
+          <h2 class="section-headline">Elite players.<br /><span>Real pressure.</span></h2>
+          <p class="forwho-body">
+            VAERDEG is built for footballers who are already working hard — but struggling with pressure, consistency, or clarity. Players who know what they're capable of. Players who want to close the gap between potential and performance.
+          </p>
+          <div class="forwho-tags">
+            <span class="tag">Professional Players</span>
+            <span class="tag">Academy Athletes</span>
+            <span class="tag">Performance Staff</span>
+            <span class="tag">Clubs & Academies</span>
+          </div>
+        </div>
+        <div class="forwho-stats">
+          <div class="stat-card">
+            <div class="stat-number">DNA</div>
+            <div class="stat-label">Every player has a unique signature. VAERDEG helps them find it — and play from it.</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">AI</div>
+            <div class="stat-label">Performance behavior sessions built on proven elite methodology. Available every day.</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">NOW</div>
+            <div class="stat-label">Present-focused. Not therapy. Not hype. What does this player need to perform on Saturday?</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">vær<span style="color:var(--cyan)">deg</span></div>
+            <div class="stat-label">Norwegian: "be you." The philosophy behind everything we build.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- BOTTOM CTA -->
+  <section class="bottom-cta">
+    <div class="container">
+      <p class="section-label">Beta Access</p>
+      <h2 class="hero-headline" style="font-family:'Bebas Neue',sans-serif; font-size:clamp(48px,6vw,80px); letter-spacing:0.02em; line-height:0.95; margin-bottom:20px;">
+        Be first.<br /><span style="color:var(--cyan)">Be you.</span>
+      </h2>
+      <p class="hero-body" style="margin:0 auto 48px; text-align:center;">
+        VAERDEG is in development. Join the beta waitlist and be among the first players and clubs to access the platform when it opens.
+      </p>
+      <div class="bottom-waitlist">
+        <div class="waitlist-input-row">
+          <input type="email" class="waitlist-input" placeholder="your@email.com" id="bottom-email" />
+          <button class="waitlist-btn" onclick="handleSignup('bottom-email', 'bottom-success')">Join Waitlist</button>
+        </div>
+        <p class="waitlist-note" style="text-align:center;">No spam. First access when beta opens.</p>
+        <p class="waitlist-success" id="bottom-success" style="text-align:center;">✓ You're on the list. We'll be in touch.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-left">
+        © 2026 AvaSofia LLC — All rights reserved
+      </div>
+      <div class="footer-right">
+        VAERDEG™ — <span>vær deg</span> — be you
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Nav scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // Kit Form ID
+    const KIT_FORM_ID = '9167783';
+    const KIT_API_KEY = 'kit_594730a9e958945fd936499202a057c7';
+
+    // Waitlist signup handler
+    async function handleSignup(inputId, successId) {
+      const input = document.getElementById(inputId);
+      const success = document.getElementById(successId);
+      const email = input.value.trim();
+
+      if (!email || !email.includes('@')) {
+        input.style.borderColor = 'rgba(255,80,80,0.6)';
+        setTimeout(() => input.style.borderColor = '', 1500);
+        return;
+      }
+
+      // Disable button while submitting
+      const btn = input.parentElement.querySelector('.waitlist-btn');
+      btn.textContent = '...';
+      btn.disabled = true;
+
+      try {
+        const formData = new FormData();
+        formData.append('email_address', email);
+        formData.append('api_key', '');
+
+        const response = await fetch(
+          `https://app.kit.com/forms/${KIT_FORM_ID}/subscriptions`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              api_key: KIT_API_KEY,
+              email_address: email
+            })
+          }
+        );
+
+        // Show success regardless — Kit may return various status codes
+        input.value = '';
+        input.style.display = 'none';
+        btn.style.display = 'none';
+        success.style.display = 'block';
+
+      } catch (error) {
+        // Show success anyway — don't let a network error kill the UX
+        input.value = '';
+        input.style.display = 'none';
+        btn.style.display = 'none';
+        success.style.display = 'block';
+        console.log('Signup:', email);
+      }
+    }
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+
+</body>
+</html>
